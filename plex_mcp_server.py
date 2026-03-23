@@ -103,6 +103,11 @@ from modules.media import (
     media_set_artwork,
     media_list_available_artwork  
 )  
+# Recommend module functions
+from modules.recommend import (
+    media_get_recommendations,
+    media_get_similar
+)
 # Client module functions
 from modules.client import (
     client_list, 
@@ -313,9 +318,8 @@ def create_starlette_app(mcp_server: Server, debug: bool = False):
 
 def main():
     """Main entry point for the Plex MCP Server."""
-    if env_loaded:
-        print("Successfully loaded environment variables from .env file")
-    
+    import sys
+
     # Setup command line arguments
     parser = argparse.ArgumentParser(description='Run Plex MCP Server')
     parser.add_argument('--transport', choices=['stdio', 'sse'], default='sse',
@@ -323,13 +327,13 @@ def main():
     parser.add_argument('--host', default='0.0.0.0', help='Host to bind to (for SSE)')
     parser.add_argument('--port', type=int, default=3001, help='Port to listen on (for SSE)')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode')
-    
+
     # Plex configuration arguments
-    parser.add_argument('--plex-url', default=os.environ.get('PLEX_URL'), 
+    parser.add_argument('--plex-url', default=os.environ.get('PLEX_URL'),
                         help='Plex Server URL (default: PLEX_URL env var)')
-    parser.add_argument('--plex-token', default=os.environ.get('PLEX_TOKEN'), 
+    parser.add_argument('--plex-token', default=os.environ.get('PLEX_TOKEN'),
                         help='Plex Auth Token (default: PLEX_TOKEN env var)')
-    
+
     # OAuth configuration arguments
     parser.add_argument('--oauth-enabled', action='store_true',
                         default=os.environ.get('MCP_OAUTH_ENABLED', '').lower() == 'true',
@@ -341,18 +345,24 @@ def main():
 
     args = parser.parse_args()
 
+    # In stdio mode, stdout is the MCP protocol channel — use stderr for logging
+    log = print if args.transport != 'stdio' else lambda *a, **kw: print(*a, file=sys.stderr, **kw)
+
+    if env_loaded:
+        log("Successfully loaded environment variables from .env file")
+
     # Apply configuration updates to modules
     # This ensures that both CLI args and environment variables (loaded above)
     # are reflected in the modules' shared state.
     modules.plex_url = args.plex_url
     modules.plex_token = args.plex_token
-    
+
     if args.plex_url:
         os.environ['PLEX_URL'] = args.plex_url
-        
+
     if args.plex_token:
         os.environ['PLEX_TOKEN'] = args.plex_token
-    
+
     # Apply OAuth configuration from command line
     if args.oauth_enabled:
         os.environ['MCP_OAUTH_ENABLED'] = 'true'
@@ -360,18 +370,18 @@ def main():
         os.environ['MCP_OAUTH_ISSUER'] = args.oauth_issuer
     if args.server_url:
         os.environ['MCP_SERVER_URL'] = args.server_url
-        
+
     # Refresh OAuth configuration to pick up any CLI overrides or late-loaded environment variables
     oauth_config.reload()
-        
+
     # Initialize and run the server
-    print(f"Starting Plex MCP Server with {args.transport} transport...")
-    
+    log(f"Starting Plex MCP Server with {args.transport} transport...")
+
     # Configuration status
     masked_token = f"{args.plex_token[:4]}...{args.plex_token[-4:]}" if args.plex_token and len(args.plex_token) > 8 else "Not set"
     if not args.plex_url or not args.plex_token:
-        print("Warning: Missing Plex configuration. Set PLEX_URL/PLEX_TOKEN via args or .env")
-    
+        log("Warning: Missing Plex configuration. Set PLEX_URL/PLEX_TOKEN via args or .env")
+
     if args.transport == 'stdio':
         # Run with stdio transport (original method)
         mcp.run(transport='stdio')
