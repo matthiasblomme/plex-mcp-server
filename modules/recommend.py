@@ -39,14 +39,19 @@ async def _async_get_json(session: aiohttp.ClientSession, url: str, headers: Dic
 _metadata_cache: Dict[int, Any] = {}
 
 
-async def _cached_fetch_item(plex, rating_key: int):
+async def _cached_fetch_item(plex, rating_key):
     """Fetch a Plex item by ratingKey, using an in-memory cache."""
-    if rating_key in _metadata_cache:
-        return _metadata_cache[rating_key]
+    # Normalize to int — fetchItem treats strings as URL paths
+    try:
+        rk = int(rating_key)
+    except (ValueError, TypeError):
+        return None
+    if rk in _metadata_cache:
+        return _metadata_cache[rk]
     loop = asyncio.get_running_loop()
     try:
-        item = await loop.run_in_executor(None, plex.fetchItem, rating_key)
-        _metadata_cache[rating_key] = item
+        item = await loop.run_in_executor(None, plex.fetchItem, rk)
+        _metadata_cache[rk] = item
         return item
     except Exception:
         return None
@@ -82,13 +87,19 @@ def _year_to_decade(year) -> Optional[int]:
 # ---------------------------------------------------------------------------
 
 def _get_sections_for_type(plex, content_type: str) -> List[Dict]:
-    """Return list of {section_id, section_type} dicts filtered by content_type."""
+    """Return list of {section_id, section_type} dicts filtered by content_type.
+
+    Skips non-media sections (e.g. photo, camera libraries tagged as 'movie').
+    """
     type_map = {"movie": "movie", "show": "show"}
     target = type_map.get(content_type.lower())
+    # Section titles that are clearly not real media libraries
+    skip_titles = {"cameras", "camera", "photos", "home videos"}
     sections = []
     for section in plex.library.sections():
         if target is None or section.type == target:
-            sections.append({"id": section.key, "type": section.type, "title": section.title})
+            if section.title.lower() not in skip_titles:
+                sections.append({"id": section.key, "type": section.type, "title": section.title})
     return sections
 
 
@@ -553,16 +564,31 @@ async def media_get_recommendations(
         # 4.5. Compute Trakt community scores (if enabled)
         trakt_scores = None
         if use_trakt:
-            # Select top 5 seed items from history (highest rated or most recent)
+            # Select top 5 seed items from history (most recent)
+            # For episodes, promote to show level (Trakt needs show IDs)
             seed_items = []
-            for h in filtered_history[:10]:
+            seen_seed_keys = set()
+            for h in filtered_history[:15]:
                 rk = getattr(h, "ratingKey", None)
-                if rk:
-                    item = await _cached_fetch_item(plex, rk)
-                    if item is not None:
+                if not rk:
+                    continue
+                item = await _cached_fetch_item(plex, rk)
+                if item is None:
+                    continue
+                # Promote episodes to their parent show
+                if getattr(item, "type", "") == "episode":
+                    grandparent_key = getattr(item, "grandparentRatingKey", None)
+                    if grandparent_key and grandparent_key not in seen_seed_keys:
+                        show = await _cached_fetch_item(plex, grandparent_key)
+                        if show is not None:
+                            seen_seed_keys.add(grandparent_key)
+                            seed_items.append(show)
+                else:
+                    if rk not in seen_seed_keys:
+                        seen_seed_keys.add(rk)
                         seed_items.append(item)
-                    if len(seed_items) >= 5:
-                        break
+                if len(seed_items) >= 5:
+                    break
 
             # Fetch full metadata for candidates that need Trakt scoring
             candidate_items = []
