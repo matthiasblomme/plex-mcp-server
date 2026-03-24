@@ -230,7 +230,7 @@ async def collection_add_to(collection_title: str = None, collection_id: int = N
                 # Try fetching by ratingKey first
                 try:
                     collection = plex.fetchItem(collection_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all libraries
                     collection = None
                     for section in plex.library.sections():
@@ -243,7 +243,7 @@ async def collection_add_to(collection_title: str = None, collection_id: int = N
                                         break
                                 if collection:
                                     break
-                            except:
+                            except Exception:
                                 continue
                 
                 if not collection:
@@ -320,7 +320,7 @@ async def collection_add_to(collection_title: str = None, collection_id: int = N
                                     break
                             if library:
                                 break
-                        except:
+                        except Exception:
                             continue
                 
                 if not library:
@@ -417,7 +417,7 @@ async def collection_remove_from(collection_title: str = None, collection_id: in
                 # Try fetching by ratingKey first
                 try:
                     collection = plex.fetchItem(collection_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all libraries
                     collection = None
                     for section in plex.library.sections():
@@ -429,7 +429,7 @@ async def collection_remove_from(collection_title: str = None, collection_id: in
                                         break
                                 if collection:
                                     break
-                            except:
+                            except Exception:
                                 continue
                 
                 if not collection:
@@ -538,7 +538,7 @@ async def collection_delete(collection_title: str = None, collection_id: int = N
                 # Try fetching by ratingKey first
                 try:
                     collection = plex.fetchItem(collection_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all libraries
                     collection = None
                     for section in plex.library.sections():
@@ -550,7 +550,7 @@ async def collection_delete(collection_title: str = None, collection_id: int = N
                                         break
                                 if collection:
                                     break
-                            except:
+                            except Exception:
                                 continue
                 
                 if not collection:
@@ -658,7 +658,7 @@ async def collection_edit(collection_title: str = None, collection_id: int = Non
                 # Try fetching by ratingKey first
                 try:
                     collection = plex.fetchItem(collection_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all libraries
                     collection = None
                     for section in plex.library.sections():
@@ -670,7 +670,7 @@ async def collection_edit(collection_title: str = None, collection_id: int = Non
                                         break
                                 if collection:
                                     break
-                            except:
+                            except Exception:
                                 continue
                 
                 if not collection:

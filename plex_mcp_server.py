@@ -343,6 +343,10 @@ def main():
     parser.add_argument('--server-url', default=os.environ.get('MCP_SERVER_URL'),
                         help='Public server URL for OAuth callbacks')
 
+    # Trakt integration arguments
+    parser.add_argument('--trakt-client-id', default=os.environ.get('TRAKT_CLIENT_ID'),
+                        help='Trakt API Client ID for community recommendations (default: TRAKT_CLIENT_ID env var)')
+
     args = parser.parse_args()
 
     # In stdio mode, stdout is the MCP protocol channel — use stderr for logging
@@ -370,6 +374,10 @@ def main():
         os.environ['MCP_OAUTH_ISSUER'] = args.oauth_issuer
     if args.server_url:
         os.environ['MCP_SERVER_URL'] = args.server_url
+
+    # Apply Trakt configuration from command line
+    if args.trakt_client_id:
+        os.environ['TRAKT_CLIENT_ID'] = args.trakt_client_id
 
     # Refresh OAuth configuration to pick up any CLI overrides or late-loaded environment variables
     oauth_config.reload()

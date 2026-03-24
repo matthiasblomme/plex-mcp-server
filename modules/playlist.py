@@ -141,7 +141,7 @@ async def playlist_edit(playlist_title: str = None, playlist_id: int = None, new
                 # Try fetching by ratingKey first
                 try:
                     playlist = plex.fetchItem(playlist_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all playlists
                     all_playlists = plex.playlists()
                     playlist = next((p for p in all_playlists if p.ratingKey == playlist_id), None)
@@ -236,7 +236,7 @@ async def playlist_upload_poster(playlist_title: str = None, playlist_id: int = 
                 # Try fetching by ratingKey first
                 try:
                     playlist = plex.fetchItem(playlist_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all playlists
                     all_playlists = plex.playlists()
                     playlist = next((p for p in all_playlists if p.ratingKey == playlist_id), None)
@@ -333,7 +333,7 @@ async def playlist_copy_to_user(playlist_title: str = None, playlist_id: int = N
                 # Try fetching by ratingKey first
                 try:
                     playlist = plex.fetchItem(playlist_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all playlists
                     all_playlists = plex.playlists()
                     playlist = next((p for p in all_playlists if p.ratingKey == playlist_id), None)
@@ -416,7 +416,7 @@ async def playlist_add_to(playlist_title: str = None, playlist_id: int = None, i
                 # Try fetching by ratingKey first
                 try:
                     playlist = plex.fetchItem(playlist_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all playlists
                     all_playlists = plex.playlists()
                     playlist = next((p for p in all_playlists if p.ratingKey == playlist_id), None)
@@ -566,7 +566,7 @@ async def playlist_remove_from(playlist_title: str = None, playlist_id: int = No
                 # Try fetching by ratingKey first
                 try:
                     playlist = plex.fetchItem(playlist_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all playlists
                     all_playlists = plex.playlists()
                     playlist = next((p for p in all_playlists if p.ratingKey == playlist_id), None)
@@ -671,7 +671,7 @@ async def playlist_delete(playlist_title: str = None, playlist_id: int = None) -
                 # Try fetching by ratingKey first
                 try:
                     playlist = plex.fetchItem(playlist_id)
-                except:
+                except Exception:
                     # If that fails, try finding by key in all playlists
                     all_playlists = plex.playlists()
                     playlist = next((p for p in all_playlists if p.ratingKey == playlist_id), None)
@@ -745,7 +745,7 @@ async def playlist_get_contents(playlist_title: str = None, playlist_id: int = N
                 try:
                     playlist = plex.fetchItem(playlist_id)
                     print(playlist.items())
-                except:
+                except Exception:
                     # If that fails, try finding by key in all playlists
                     all_playlists = plex.playlists()
                     playlist = next((p for p in all_playlists if p.ratingKey == playlist_id), None)

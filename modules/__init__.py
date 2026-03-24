@@ -35,7 +35,7 @@ def connect_to_plex() -> PlexServer:
                 server.library.sections()
                 last_connection_time = current_time
                 return server
-            except:
+            except Exception:
                 # Connection failed, reset and create a new one
                 server = None
     

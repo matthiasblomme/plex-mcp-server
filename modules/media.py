@@ -503,7 +503,7 @@ def get_media_details(media):
             try:
                 album = media.album()
                 details['year'] = getattr(album, 'year', None)
-            except:
+            except Exception:
                 pass
     
     # Add collections
@@ -781,7 +781,7 @@ async def media_get_artwork(media_title: str = None, media_id: int = None, libra
             if collection_method != "None" and hasattr(media, collection_method) and callable(getattr(media, collection_method)):
                 try:
                     available_versions = getattr(media, collection_method)()
-                except:
+                except Exception:
                     pass
             
             # Handle different output formats
@@ -866,7 +866,7 @@ async def media_delete(media_title: str = None, media_id: int = None, library_na
                 # Try fetching by ratingKey
                 try:
                     media = plex.fetchItem(media_id)
-                except:
+                except Exception:
                     # If that fails, try searching in all libraries
                     media = None
                 

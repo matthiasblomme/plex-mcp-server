@@ -23,7 +23,7 @@ async def async_get_json(session, url, headers):
             try:
                 error_body = await response.text()
                 error_msg = error_body[:200]
-            except:
+            except Exception:
                 error_msg = "Could not read error body"
             raise Exception(f"Plex API error {status}: {error_msg}")
         return await response.json()

@@ -155,7 +155,7 @@ async def server_get_plex_logs(num_lines: int = 100, log_type: str = "server", s
                 # Clean up the downloaded zip if desired
                 try:
                     os.remove(logs_path_or_data)
-                except:
+                except Exception:
                     pass
         else:
             # We received the actual data or path to data - process in memory

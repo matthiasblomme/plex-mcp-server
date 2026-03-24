@@ -746,7 +746,7 @@ async def client_control_playback(client_name: str, action: str,
                 try:
                     current_time = client.timeline.time if client.timeline else 0
                     client.seekTo(current_time + (seconds * 1000), mtype=media_type)
-                except:
+                except Exception:
                     return json.dumps({
                         "status": "error",
                         "message": "Unable to get current playback position for seeking forward"
@@ -758,7 +758,7 @@ async def client_control_playback(client_name: str, action: str,
                     current_time = client.timeline.time if client.timeline else 0
                     seek_time = max(0, current_time - (seconds * 1000))
                     client.seekTo(seek_time, mtype=media_type)
-                except:
+                except Exception:
                     return json.dumps({
                         "status": "error",
                         "message": "Unable to get current playback position for seeking back"
@@ -779,7 +779,7 @@ async def client_control_playback(client_name: str, action: str,
                 client.setVolume(parameter, mtype=media_type)
             
             # Check timeline to confirm the action (may take a moment to update)
-            time.sleep(0.5)  # Give a short delay for state to update
+            await asyncio.sleep(0.5)  # Give a short delay for state to update
             
             # Get updated timeline info
             timeline_data = None
@@ -793,7 +793,7 @@ async def client_control_playback(client_name: str, action: str,
                         "volume": getattr(timeline, "volume", None),
                         "muted": getattr(timeline, "muted", None)
                     }
-            except:
+            except Exception:
                 pass
             
             return json.dumps({

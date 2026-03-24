@@ -246,7 +246,7 @@ async def user_get_info(username: str = None) -> str:
                         if hasattr(device, 'lastSeenAt'):
                             device_data["lastSeenAt"] = str(device.lastSeenAt)
                         result["devices"].append(device_data)
-            except:
+            except Exception:
                 result["devices"] = None
         
         return json.dumps(result)
